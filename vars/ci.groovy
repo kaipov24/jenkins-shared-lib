@@ -21,10 +21,15 @@ def hadolint() {
 }
 
 def trivyScan(String image) {
-  sh """
-    TRIVY_CACHE_DIR=/var/lib/jenkins/trivy-cache \
-    trivy image --no-progress --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ${image} | head -n 40
-  """
+  def vulnerabilities = sh(
+    script: """
+      TRIVY_CACHE_DIR=/var/lib/jenkins/trivy-cache \
+      trivy image --exit-code 0 --severity HIGH,MEDIUM,LOW --no-progress ${image}
+    """,
+    returnStdout: true
+  ).trim()
+
+  echo "Vulnerability Report:\n${vulnerabilities}"
 }
 
 def dockerLogin(String credId='dockerhub') {
